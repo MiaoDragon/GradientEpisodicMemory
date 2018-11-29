@@ -9,14 +9,14 @@ MNIST_PERM="--n_layers 2 --n_hiddens 100 --data_path data/ --save_path results/ 
 cd data/
 cd raw/
 
-$MY_PYTHON raw.py
+#$MY_PYTHON raw.py
 
 cd ..
 
-$MY_PYTHON mnist_permutations.py \
-	--o mnist_permutations.pt \
-	--seed 0 \
-	--n_tasks 20
+#$MY_PYTHON mnist_permutations.py \
+#	--o mnist_permutations.pt \
+#	--seed 0 \
+#	--n_tasks 20
 
 #$MY_PYTHON mnist_rotations.py \
 #	--o mnist_rotations.pt\
