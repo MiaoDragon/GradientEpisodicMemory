@@ -169,6 +169,8 @@ class Net(nn.Module):
         bsz = y.data.size(0)
         endcnt = min(self.mem_cnt + bsz, self.n_memories)
         effbsz = endcnt - self.mem_cnt
+        self.memory_data[t, self.mem_cnt: endcnt].copy_(
+            x.data[: effbsz])
         if bsz == 1:
             self.memory_labs[t, self.mem_cnt] = y.data[0]
         else:
