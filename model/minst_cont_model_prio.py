@@ -195,6 +195,7 @@ class Net(nn.Module):
             print(indices)
             print('loss of %d' % (indices[0].item()))
             print(losses[indices[0].item()])
+            print('label of %d' % (labels[indices[0].item()].item()))
             self.memory_data[t].copy_(data[indices])
             self.memory_labs[t].copy_(labels[indices])
             self.mem_cnt = self.n_memories
