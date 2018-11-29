@@ -63,7 +63,7 @@ class Net(nn.Module):
             labels += list(y)
             data = torch.stack(data)
             labels = torch.stack(labels)
-            preds = self.forward(data)
+            preds = self.forward(data, t)
             losses = [self.loss(preds[i].unsqueeze(0), labels[i].unsqueeze(0)) for i in range(len(labels))]
             _, indices = torch.topk(torch.stack(losses), self.n_memories)
             self.memory_data[t].copy_(data[indices])
@@ -87,7 +87,7 @@ class Net(nn.Module):
         # (prevent forgetting previous experience of same task, too)
         # now compute the grad on the current minibatch
         self.zero_grad()
-        loss = self.loss(self.forward(x), y)
+        loss = self.loss(self.forward(x, t), y)
         loss.backward()
 
         # check if gradient violates constraints
