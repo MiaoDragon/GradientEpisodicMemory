@@ -81,7 +81,7 @@ def project2cone2(gradient, memories, margin=0.5, eps=1e-3):
 
 class Net(nn.Module):
     def __init__(self, input_size, output_size, \
-                 n_tasks, n_memories, memory_strength):
+                 n_tasks, args):
         super(MinstNet, self).__init__()
         self.net = MLP([input_size] + [100] * 2 + [output_size])
         self.ce = nn.CrossEntropyLoss()
@@ -93,8 +93,8 @@ class Net(nn.Module):
         reference: https://arxiv.org/abs/1706.08840
         code from: https://github.com/facebookresearch/GradientEpisodicMemory
         '''
-        self.margin = memory_strength
-        self.n_memories = n_memories
+        self.margin = args.memory_strength
+        self.n_memories = args.n_memories
         # allocate episodic memory
         self.memory_data = torch.FloatTensor(
             n_tasks, self.n_memories, input_size)

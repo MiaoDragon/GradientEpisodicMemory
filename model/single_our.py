@@ -6,7 +6,7 @@ import numpy as np
 # Auxiliary functions useful for GEM's inner optimization.
 class Net(nn.Module):
     def __init__(self, input_size, output_size, \
-                 n_tasks, n_memories, memory_strength):
+                 n_tasks, args):
         super(MinstNet, self).__init__()
         self.net = MLP([input_size] + [100] * 2 + [output_size])
         self.ce = nn.CrossEntropyLoss()
