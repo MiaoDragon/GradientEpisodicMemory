@@ -36,7 +36,7 @@ def load_datasets(args):
     trainset = torchvision.datasets.MNIST('../minst', train=True, download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=0)
 
-    train_x, train_y = trainset.train_set, trainset.train_labels
+    train_x, train_y = trainset.train_data, trainset.train_labels
     train_x = train_x.type(torch.FloatTensor) / 255.
     train_x = train_x.view(train_x.size(0), -1)
     testset = torchvision.datasets.MNIST('../minst', train=False, download=True, transform=transform)
