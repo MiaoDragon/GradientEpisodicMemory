@@ -193,6 +193,8 @@ class Net(nn.Module):
             losses = [self.loss(preds[i].unsqueeze(0), labels[i].unsqueeze(0)) for i in range(len(labels))]
             _, indices = torch.topk(torch.stack(losses), self.n_memories)
             print(indices)
+            print('loss of %d' % (indices[0].item()))
+            print(losses[indices[0].item()])
             self.memory_data[t].copy_(data[indices])
             self.memory_labs[t].copy_(labels[indices])
             self.mem_cnt = self.n_memories
