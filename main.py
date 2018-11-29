@@ -144,6 +144,8 @@ def eval_tasks(model, tasks, args):
             if args.cuda:
                 xb = xb.cuda()
             _, pb = torch.max(model(xb, t).data.cpu(), 1, keepdim=False)
+            if args.cuda:
+                pb = pb.cuda()
             rt += (pb == yb).float().sum()
 
         result.append(rt / x.size(0))
