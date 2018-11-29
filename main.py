@@ -17,6 +17,7 @@ import numpy as np
 import torch
 import torchvision
 from metrics.metrics import confusion_matrix
+import torchvision.transforms as transforms
 
 # continuum iterator #########################################################
 
