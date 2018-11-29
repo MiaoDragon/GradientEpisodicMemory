@@ -23,7 +23,7 @@ class Net(nn.Module):
         self.opt = torch.optim.SGD(self.parameters(), args.lr)
         #self.opt = torch.optim.Adam(self.parameters(), 1e-1)
         #self.opt = torch.optim.Adagrad(self.parameters(), 1e-1)
-    def forward(self, x):
+    def forward(self, x, t):
         # xobs is the input to encoder
         # x is the input to mlp
         #print(x.shape)
