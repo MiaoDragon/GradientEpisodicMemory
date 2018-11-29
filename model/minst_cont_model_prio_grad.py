@@ -206,7 +206,7 @@ class Net(nn.Module):
                 norms.append(norm_i)
             #losses = [self.loss(preds[i].unsqueeze(0), labels[i].unsqueeze(0)) for i in range(len(labels))]
             #_, indices = torch.topk(torch.stack(losses), self.n_memories)
-            _, indices = torch.topk(norms, self.n_memories)
+            _, indices = torch.topk(torch.tensor(norms).cuda(), self.n_memories)
             #indices = np.random.choice(len(labels), self.n_memories, replace=False)
             self.memory_data[t].copy_(data[indices])
             self.memory_labs[t].copy_(labels[indices])
