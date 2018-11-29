@@ -82,7 +82,7 @@ def project2cone2(gradient, memories, margin=0.5, eps=1e-3):
 class Net(nn.Module):
     def __init__(self, input_size, output_size, \
                  n_tasks, args):
-        super(MinstNet, self).__init__()
+        super(Net, self).__init__()
         self.net = MLP([input_size] + [100] * 2 + [output_size])
         self.ce = nn.CrossEntropyLoss()
         self.n_outputs = output_size
