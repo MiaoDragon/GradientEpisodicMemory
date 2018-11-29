@@ -50,8 +50,8 @@ def load_datasets(args):
         train_y = train_y.cuda()
     # random permutation
     perms = []
-    test_xs = [] # for each task
-    test_ys = [] # for each task
+    d_tr = []
+    d_te = []
     for t in range(20):
         p = torch.randperm(test_x.size(1)).long().view(-1).cuda()
         perms.append(p)
