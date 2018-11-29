@@ -262,7 +262,7 @@ if __name__ == "__main__":
     model = Model.Net(n_inputs, n_outputs, n_tasks, args)
     if args.cuda:
         model.cuda()
-
+        model.set_opt(args.lr)
     # run model on continuum
     result_t, result_a, spent_time = life_experience(
         model, continuum, x_te, args)

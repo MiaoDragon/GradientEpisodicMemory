@@ -119,10 +119,10 @@ class Net(nn.Module):
         self.old_task = -1
         self.mem_cnt = 0
 
-    def set_opt(self):
-        self.opt = torch.optim.SGD(self.parameters(), args.lr)
+    def set_opt(self, lr):
+        #self.opt = torch.optim.SGD(self.parameters(), args.lr)
         #self.opt = torch.optim.Adam(self.parameters(), 1e-1)
-        #self.opt = torch.optim.Adagrad(self.parameters(), 1e-1)
+        self.opt = torch.optim.Adagrad(self.parameters(), lr)
     def forward(self, x, t):
         # xobs is the input to encoder
         # x is the input to mlp
