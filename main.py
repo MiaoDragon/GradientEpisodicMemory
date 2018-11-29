@@ -15,20 +15,49 @@ import os
 import numpy as np
 
 import torch
+import torchvision
 from metrics.metrics import confusion_matrix
 
 # continuum iterator #########################################################
 
 
 def load_datasets(args):
-    d_tr, d_te = torch.load(args.data_path + '/' + args.data_file)
-    n_inputs = d_tr[0][1].size(1)
-    n_outputs = 0
-    for i in range(len(d_tr)):
-        n_outputs = max(n_outputs, d_tr[i][2].max().item())
-        n_outputs = max(n_outputs, d_te[i][2].max().item())
-    return d_tr, d_te, n_inputs, n_outputs + 1, len(d_tr)
+    #d_tr, d_te = torch.load(args.data_path + '/' + args.data_file)
+    #n_inputs = d_tr[0][1].size(1)
+    #n_outputs = 0
+    #for i in range(len(d_tr)):
+    #    n_outputs = max(n_outputs, d_tr[i][2].max().item())
+    #    n_outputs = max(n_outputs, d_te[i][2].max().item())
+    #return d_tr, d_te, n_inputs, n_outputs + 1, len(d_tr)
+    # our version test
+    torch.manual_seed(args.seed)
+    transform = transforms.ToTensor()
+    trainset = torchvision.datasets.MNIST('../minst', train=True, download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=0)
 
+    train_x, train_y = trainset.train_set, trainset.train_labels
+    train_x = train_x.type(torch.FloatTensor) / 255.
+    train_x = train_x.view(train_x.size(0), -1)
+    testset = torchvision.datasets.MNIST('../minst', train=False, download=True, transform=transform)
+    test_x, test_y = testset.test_data, testset.test_labels
+    test_x = test_x.type(torch.FloatTensor) / 255.
+    test_x = test_x.view(test_x.size(0), -1)
+    if args.cuda:
+        test_x = test_x.cuda()
+        test_y = test_y.cuda()
+        train_x = train_x.cuda()
+        train_y = train_y.cuda()
+    # random permutation
+    perms = []
+    test_xs = [] # for each task
+    test_ys = [] # for each task
+    for t in range(args.n_tasks):
+        p = torch.randperm(test_x.size(1)).long().view(-1).cuda()
+        perms.append(p)
+        d_tr.append(['random permutation', train_x.index_select(1,p), train_y])
+        d_te.append(['random permutation', test_x.index_select(1,p), test_y])
+    return d_tr, d_te, train_x.size(1), 10, len(d_tr)
+    # d_tr: N * 3        0: perm  1: train_xs   2: train_ys
 
 class Continuum:
 
@@ -98,7 +127,7 @@ def eval_tasks(model, tasks, args):
         x = task[1]
         y = task[2]
         rt = 0
-        
+
         eval_bs = x.size(0)
 
         for b_from in range(0, x.size(0), eval_bs):
