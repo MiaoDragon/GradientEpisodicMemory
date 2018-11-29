@@ -213,15 +213,9 @@ class Net(nn.Module):
         # everytime we treat the new data as a new task
         # compute gradient on all tasks
         # (prevent forgetting previous experience of same task, too)
-        if t != self.old_task:
-            # new task, clear mem_cnt
-            self.observed_tasks.append(t)
-            self.old_task = t
-            self.mem_cnt = 0
-        self.remember(x, t, y)
 
-        if len(self.observed_tasks) >= 2:
-            for tt in range(len(self.observed_tasks)-1):
+        if len(self.observed_tasks) >= 1:
+            for tt in range(len(self.observed_tasks)):
                 if self.mem_cnt == 0 and tt == len(self.observed_tasks) - 1:
                     # nothing to train on
                     continue
@@ -251,12 +245,12 @@ class Net(nn.Module):
         # check if gradient violates constraints
         # treat gradient of current data as a new task (max of observed task + 1)
         # just to give it a new task label
-        if len(self.observed_tasks) >= 2:
+        if len(self.observed_tasks) >= 1:
             # copy gradient
             new_t = max(self.observed_tasks)+1  # a new dimension
             store_grad(self.parameters, self.grads, self.grad_dims, new_t)
-            indx = torch.cuda.LongTensor(self.observed_tasks[:-1]) if torch.cuda.is_available() \
-                else torch.LongTensor(self.observed_tasks[:-1])   # here we need all observed tasks
+            indx = torch.cuda.LongTensor(self.observed_tasks) if torch.cuda.is_available() \
+                else torch.LongTensor(self.observed_tasks)   # here we need all observed tasks
             #indx = torch.cuda.FloatTensor(self.observed_tasks[:-1]) if torch.cuda.is_available() \
             #    else torch.FloatTensor(self.observed_tasks[:-1])
             # here is different, we are using new_t instead of t to ditinguish between
@@ -273,3 +267,9 @@ class Net(nn.Module):
         self.opt.step()
         # when storing into memory, we use the correct task label
         # Update ring buffer storing examples from current task
+        if t != self.old_task:
+            # new task, clear mem_cnt
+            self.observed_tasks.append(t)
+            self.old_task = t
+            self.mem_cnt = 0
+        self.remember(x, t, y)
