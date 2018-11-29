@@ -86,7 +86,8 @@ class Net(nn.Module):
         self.net = MLP([input_size] + [100] * 2 + [output_size])
         self.ce = nn.CrossEntropyLoss()
         self.n_outputs = output_size
-        self.opt = torch.optim.SGD(self.parameters(), args.lr)
+        #self.opt = torch.optim.SGD(self.parameters(), args.lr)
+        self.opt = torch.optim.Adagrad(self.parameters(), args.lr)
         #self.opt = torch.optim.Adagrad(list(self.encoder.parameters())+list(self.mlp.parameters()))
         '''
         Below is the attributes defined in GEM implementation
