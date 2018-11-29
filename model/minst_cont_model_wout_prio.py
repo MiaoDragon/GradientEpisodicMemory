@@ -245,6 +245,7 @@ class Net(nn.Module):
             if (dotp < 0).sum() != 0:
                 project2cone2(self.grads[:, new_t].unsqueeze(1),
                               self.grads.index_select(1, indx), self.margin)
+                print('projecting....')
                 # copy gradients back
                 overwrite_grad(self.parameters, self.grads[:, new_t],
                                self.grad_dims)
