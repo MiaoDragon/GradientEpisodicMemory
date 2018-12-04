@@ -137,7 +137,11 @@ class Net(nn.Module):
             self.nc_per_task = int(n_outputs / n_tasks)
         else:
             self.nc_per_task = n_outputs
-
+        self.lr = args.lr
+    def set_opt(self):
+        self.opt = optim.SGD(self.parameters(), self.lr)
+        #self.opt = torch.optim.Adam(self.parameters(), 1e-1)
+        #self.opt = torch.optim.Adagrad(self.parameters(), 1e-1)
     def forward(self, x, t):
         output = self.net(x)
         if self.is_cifar:
