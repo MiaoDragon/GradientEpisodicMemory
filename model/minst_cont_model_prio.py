@@ -118,6 +118,7 @@ class Net(nn.Module):
         self.observed_tasks = []
         self.old_task = -1
         self.mem_cnt = 0
+        self.num_seen = np.zeros(n_tasks)   # count the number of samples seen, for sampling
 
     def set_opt(self, lr):
         self.opt = torch.optim.SGD(self.parameters(), lr)
@@ -160,43 +161,24 @@ class Net(nn.Module):
 
 
     def remember(self, x, t, y):
-        # put new data (x,y) into memory t
-        # if memory is not full, then go as usual
-        # otherwise:
-        # firstly compute the loss of past states and new state
-        # delete the lowest loss one
-        # will update self.mem_cnt after inserting memory
-        #print('memory size: %d' %(self.mem_cnt))
-        bsz = y.data.size(0)
-        if bsz+self.mem_cnt <= self.n_memories:
-            eff_bsz = bsz
-            endcnt = self.mem_cnt + bsz
-            effbsz = endcnt - self.mem_cnt
-            self.memory_data[t, self.mem_cnt: endcnt].copy_(
-                x.data[: effbsz])
-            if bsz == 1:
-                self.memory_labs[t, self.mem_cnt].copy_(y.data[0])
-            else:
-                self.memory_labs[t, self.mem_cnt: endcnt].copy_(
-                    y.data[: effbsz])
-            self.mem_cnt += effbsz
-        else:
-            #print('prioritzing')
-            # use network to get the loss
-            data = []
-            data = list(self.memory_data[t, :self.mem_cnt])
-            data += list(x)
-            labels = list(self.memory_labs[t, :self.mem_cnt])
-            labels += list(y)
-            data = torch.stack(data)
-            labels = torch.stack(labels)
-            preds = self.forward(data, t)
-            #losses = [self.loss(preds[i].unsqueeze(0), labels[i].unsqueeze(0)) for i in range(len(labels))]
-            #_, indices = torch.topk(torch.stack(losses), self.n_memories)
-            indices = np.random.choice(len(labels), self.n_memories, replace=False)
-            self.memory_data[t].copy_(data[indices])
-            self.memory_labs[t].copy_(labels[indices])
-            self.mem_cnt = self.n_memories
+        # follow reservoir sampling
+        # i-th item is remembered with probability min(B/i, 1)
+        for i in range(len(x)):
+            self.num_seen[t] += 1
+            prob = min(self.n_memories/self.num_seen[t], 1.)
+            # sample with prob if the item is memorized
+            sample_prob = np.random.uniform()
+            if sample_prob < prob:
+                # keep the new item
+                if self.mem_cnt < self.n_memories:
+                    self.memory_data[t, self.mem_cnt].copy_(x.data[i])
+                    self.memory_labs[t, self.mem_cnt].copy_(y.data[i])
+                    self.mem_cnt += 1
+                else:
+                    # randomly choose one to rewrite
+                    idx = np.random.choice(self.memories, size=1)
+                    self.memory_data[t, idx].copy_(x.data[i])
+                    self.memory_labs[t, idx].copy_(y.data[i])
 
     '''
     Below is the added GEM feature
