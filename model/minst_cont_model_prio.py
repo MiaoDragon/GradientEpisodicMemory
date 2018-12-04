@@ -176,7 +176,7 @@ class Net(nn.Module):
                     self.mem_cnt += 1
                 else:
                     # randomly choose one to rewrite
-                    idx = np.random.choice(self.memories, size=1)
+                    idx = np.random.choice(self.n_memories, size=1)
                     self.memory_data[t, idx].copy_(x.data[i])
                     self.memory_labs[t, idx].copy_(y.data[i])
 
