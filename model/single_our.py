@@ -19,8 +19,8 @@ class Net(nn.Module):
         code from: https://github.com/facebookresearch/GradientEpisodicMemory
         '''
 
-    def set_opt(self):
-        self.opt = torch.optim.SGD(self.parameters(), args.lr)
+    def set_opt(self, lr):
+        self.opt = torch.optim.SGD(self.parameters(), lr)
         #self.opt = torch.optim.Adam(self.parameters(), 1e-1)
         #self.opt = torch.optim.Adagrad(self.parameters(), 1e-1)
     def forward(self, x, t):
