@@ -197,6 +197,7 @@ class Net(nn.Module):
         # compute gradient on all tasks
         # (prevent forgetting previous experience of same task, too)
         t = 0
+        self.grad_step = 1
         for _ in range(self.grad_step):
             if len(self.observed_tasks) >= 1:
                 for tt in range(len(self.observed_tasks)):
