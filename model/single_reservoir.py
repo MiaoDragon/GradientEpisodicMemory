@@ -197,63 +197,75 @@ class Net(nn.Module):
         # compute gradient on all tasks
         # (prevent forgetting previous experience of same task, too)
         t = 0
+        for _ in range(self.grad_step):
+            if len(self.observed_tasks) >= 1:
+                for tt in range(len(self.observed_tasks)):
+                    if self.mem_cnt[tt] == 0 and tt == len(self.observed_tasks) - 1:
+                        # nothing to train on
+                        continue
+                    self.zero_grad()
+                    # fwd/bwd on the examples in the memory
+                    past_task = self.observed_tasks[tt]
+                    if tt == len(self.observed_tasks) - 1:
+                        ptloss = self.loss(
+                            self.forward(
+                            self.memory_data[past_task][:self.mem_cnt[tt]]),   # TODO
+                            self.memory_labs[past_task][:self.mem_cnt[tt]])   # up to current
+                    else:
+                        ptloss = self.loss(
+                            self.forward(
+                            self.memory_data[past_task][:self.mem_cnt[tt]]),   # TODO
+                            self.memory_labs[past_task][:self.mem_cnt[tt]])
+                    ptloss.backward()
+                    store_grad(self.parameters, self.grads, self.grad_dims,
+                               past_task)
+
+            # now compute the grad on the current minibatch
+            self.zero_grad()
+            loss = self.loss(self.forward(x), y)
+            loss.backward()
+
+            # check if gradient violates constraints
+            # treat gradient of current data as a new task (max of observed task + 1)
+            # just to give it a new task label
+            if len(self.observed_tasks) >= 1:
+                # copy gradient
+                new_t = max(self.observed_tasks)+1  # a new dimension
+                store_grad(self.parameters, self.grads, self.grad_dims, new_t)
+                indx = torch.cuda.LongTensor(self.observed_tasks) if torch.cuda.is_available() \
+                    else torch.LongTensor(self.observed_tasks)   # here we need all observed tasks
+                #indx = torch.cuda.FloatTensor(self.observed_tasks[:-1]) if torch.cuda.is_available() \
+                #    else torch.FloatTensor(self.observed_tasks[:-1])
+                # here is different, we are using new_t instead of t to ditinguish between
+                # newly observed data and previous data
+                dotp = torch.mm(self.grads[:, new_t].unsqueeze(0),
+                                self.grads.index_select(1, indx))
+                #print('dot product computed')
+                if (dotp < 0).sum() != 0:
+                    # remember norm
+                    #print('projecting...')
+                    norm = torch.norm(self.grads[:, new_t], 2)
+                    project2cone2(self.grads[:, new_t].unsqueeze(1),
+                                  self.grads.index_select(1, indx), self.margin)
+                    new_norm = torch.norm(self.grads[:, new_t], 2)
+                    #print('norm: %f' % (norm.item()))
+                    #print('new norm: %f' % (new_norm.item()))
+                    self.grads[:, new_t].copy_(self.grads[:, new_t] / new_norm * norm)
+                    # before overwrite, to avoid gradient explosion, renormalize the gradient
+                    # so that new gradient has the same l2 norm as previous
+                    # it can be proved theoretically that this does not violate the non-negativity
+                    # of inner product between memory and gradient
+                    # copy gradients back
+                    overwrite_grad(self.parameters, self.grads[:, new_t],
+                                   self.grad_dims)
+            self.opt.step()
+        # after training, store into memory
+
+        # when storing into memory, we use the correct task label
+        # Update ring buffer storing examples from current task
         if t != self.old_task:
             # new task, clear mem_cnt
             self.observed_tasks.append(t)
             self.old_task = t
             self.mem_cnt[t] = 0
         self.remember(x, t, y)
-
-        if len(self.observed_tasks) >= 2:
-            for tt in range(len(self.observed_tasks)-1):
-                if self.mem_cnt[tt] == 0 and tt == len(self.observed_tasks) - 1:
-                    # nothing to train on
-                    continue
-                self.zero_grad()
-                # fwd/bwd on the examples in the memory
-                past_task = self.observed_tasks[tt]
-                if tt == len(self.observed_tasks) - 1:
-                    # can only use memory up to current
-                    ptloss = self.loss(
-                        self.forward(
-                        self.memory_data[past_task][:self.mem_cnt[past_task]], past_task),
-                        self.memory_labs[past_task][:self.mem_cnt[past_task]])
-                else:
-                    ptloss = self.loss(
-                        self.forward(
-                        self.memory_data[past_task], past_task),   # TODO
-                        self.memory_labs[past_task])
-                ptloss.backward()
-                store_grad(self.parameters, self.grads, self.grad_dims,
-                           past_task)
-
-        # now compute the grad on the current minibatch
-        self.zero_grad()
-        loss = self.loss(self.forward(x, t), y)
-        loss.backward()
-
-        # check if gradient violates constraints
-        # treat gradient of current data as a new task (max of observed task + 1)
-        # just to give it a new task label
-        if len(self.observed_tasks) >= 2:
-            # copy gradient
-            new_t = max(self.observed_tasks)+1  # a new dimension
-            store_grad(self.parameters, self.grads, self.grad_dims, new_t)
-            indx = torch.cuda.LongTensor(self.observed_tasks[:-1]) if torch.cuda.is_available() \
-                else torch.LongTensor(self.observed_tasks[:-1])   # here we need all observed tasks
-            #indx = torch.cuda.FloatTensor(self.observed_tasks[:-1]) if torch.cuda.is_available() \
-            #    else torch.FloatTensor(self.observed_tasks[:-1])
-            # here is different, we are using new_t instead of t to ditinguish between
-            # newly observed data and previous data
-            dotp = torch.mm(self.grads[:, new_t].unsqueeze(0),
-                            self.grads.index_select(1, indx))
-            if (dotp < 0).sum() != 0:
-                project2cone2(self.grads[:, new_t].unsqueeze(1),
-                              self.grads.index_select(1, indx), self.margin)
-                # copy gradients back
-                overwrite_grad(self.parameters, self.grads[:, new_t],
-                               self.grad_dims)
-            #print('yes is projecting!')
-        self.opt.step()
-        # when storing into memory, we use the correct task label
-        # Update ring buffer storing examples from current task
