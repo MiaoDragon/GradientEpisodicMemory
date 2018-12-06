@@ -170,13 +170,14 @@ class Net(nn.Module):
             sample_prob = np.random.uniform()
             if sample_prob < prob:
                 # keep the new item
-                if self.mem_cnt < self.n_memories:
-                    self.memory_data[t, self.mem_cnt].copy_(x.data[i])
-                    self.memory_labs[t, self.mem_cnt].copy_(y.data[i])
-                    self.mem_cnt += 1
+                if self.mem_cnt[t] < self.n_memories:
+                    self.memory_data[t, self.mem_cnt[t]].copy_(x.data[i])
+                    self.memory_labs[t, self.mem_cnt[t]].copy_(y.data[i])
+                    self.mem_cnt[t] += 1
                 else:
                     # randomly choose one to rewrite
                     idx = np.random.choice(self.n_memories, size=1)
+                    idx = idx[0]
                     self.memory_data[t, idx].copy_(x.data[i])
                     self.memory_labs[t, idx].copy_(y.data[i])
 
