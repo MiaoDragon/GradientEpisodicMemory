@@ -117,7 +117,7 @@ class Net(nn.Module):
         # allocate counters
         self.observed_tasks = []
         self.old_task = -1
-        self.mem_cnt = 0
+        self.mem_cnt = np.zeros(n_tasks)
         self.num_seen = np.zeros(n_tasks)   # count the number of samples seen, for sampling
 
     def set_opt(self, lr):
@@ -143,7 +143,7 @@ class Net(nn.Module):
                 # new task, clear mem_cnt
                 self.observed_tasks.append(tasks[i])
                 self.old_task = tasks[i]
-                self.mem_cnt = 0
+                self.mem_cnt[tasks[i]] = 0
             x = torch.tensor(xs[i])
             y = torch.tensor(ys[i])
             if torch.cuda.is_available():
@@ -200,12 +200,12 @@ class Net(nn.Module):
             # new task, clear mem_cnt
             self.observed_tasks.append(t)
             self.old_task = t
-            self.mem_cnt = 0
+            self.mem_cnt[t] = 0
         self.remember(x, t, y)
 
         if len(self.observed_tasks) >= 2:
             for tt in range(len(self.observed_tasks)-1):
-                if self.mem_cnt == 0 and tt == len(self.observed_tasks) - 1:
+                if self.mem_cnt[tt] == 0 and tt == len(self.observed_tasks) - 1:
                     # nothing to train on
                     continue
                 self.zero_grad()
@@ -215,8 +215,8 @@ class Net(nn.Module):
                     # can only use memory up to current
                     ptloss = self.loss(
                         self.forward(
-                        self.memory_data[past_task][:self.mem_cnt], past_task),
-                        self.memory_labs[past_task][:self.mem_cnt])
+                        self.memory_data[past_task][:self.mem_cnt[past_task]], past_task),
+                        self.memory_labs[past_task][:self.mem_cnt[past_task]])
                 else:
                     ptloss = self.loss(
                         self.forward(
