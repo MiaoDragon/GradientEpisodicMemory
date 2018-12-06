@@ -210,12 +210,12 @@ class Net(nn.Module):
                     if tt == len(self.observed_tasks) - 1:
                         ptloss = self.loss(
                             self.forward(
-                            self.memory_data[past_task][:self.mem_cnt[tt]]),   # TODO
+                            self.memory_data[past_task][:self.mem_cnt[tt]],tt),   # TODO
                             self.memory_labs[past_task][:self.mem_cnt[tt]])   # up to current
                     else:
                         ptloss = self.loss(
                             self.forward(
-                            self.memory_data[past_task][:self.mem_cnt[tt]]),   # TODO
+                            self.memory_data[past_task][:self.mem_cnt[tt]],tt),   # TODO
                             self.memory_labs[past_task][:self.mem_cnt[tt]])
                     ptloss.backward()
                     store_grad(self.parameters, self.grads, self.grad_dims,
@@ -223,7 +223,7 @@ class Net(nn.Module):
 
             # now compute the grad on the current minibatch
             self.zero_grad()
-            loss = self.loss(self.forward(x), y)
+            loss = self.loss(self.forward(x,t), y)
             loss.backward()
 
             # check if gradient violates constraints
