@@ -117,8 +117,8 @@ class Net(nn.Module):
         # allocate counters
         self.observed_tasks = []
         self.old_task = -1
-        self.mem_cnt = np.zeros(n_tasks)
-        self.num_seen = np.zeros(n_tasks)   # count the number of samples seen, for sampling
+        self.mem_cnt = np.zeros(n_tasks).astype(int)
+        self.num_seen = np.zeros(n_tasks).astype(int)   # count the number of samples seen, for sampling
 
     def set_opt(self, lr):
         self.opt = torch.optim.SGD(self.parameters(), lr)
