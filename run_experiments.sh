@@ -34,7 +34,7 @@ cd ..
 
 # model "single"
 #$MY_PYTHON main.py $MNIST_ROTA --model single --lr 0.003
-$MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.03
+$MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.1
 #$MY_PYTHON main.py $CIFAR_100i --model single --lr 1.0
 
 # model "independent"
