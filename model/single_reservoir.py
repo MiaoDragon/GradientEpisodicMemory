@@ -162,6 +162,7 @@ class Net(nn.Module):
     def remember(self, x, t, y):
         # follow reservoir sampling
         # i-th item is remembered with probability min(B/i, 1)
+        print('remembering...')
         for i in range(len(x)):
             self.num_seen[t] += 1
             prob_thre = min(self.n_memories, self.num_seen[t])
