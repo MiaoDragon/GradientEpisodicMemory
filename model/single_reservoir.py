@@ -159,17 +159,16 @@ class Net(nn.Module):
             #        y = y.cuda()
             #    self.remember(x, tasks[i], y)
 
-
     def remember(self, x, t, y):
         # follow reservoir sampling
         # i-th item is remembered with probability min(B/i, 1)
         for i in range(len(x)):
             self.num_seen[t] += 1
-            prob = min(self.n_memories/self.num_seen[t], 1.)
-            # sample with prob if the item is memorized
-            sample_prob = np.random.uniform()
-            if sample_prob < prob:
+            prob_thre = min(self.n_memories, self.num_seen[t])
+            rand_num = np.random.choice(self.num_seen[t], 1) # 0---self.num_seen[t]-1
+            if rand_num < prob_thre:
                 # keep the new item
+                #print('remembering...')
                 if self.mem_cnt[t] < self.n_memories:
                     self.memory_data[t, self.mem_cnt[t]].copy_(x.data[i])
                     self.memory_labs[t, self.mem_cnt[t]].copy_(y.data[i])
