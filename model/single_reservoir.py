@@ -243,7 +243,7 @@ class Net(nn.Module):
                 #print('dot product computed')
                 if (dotp < 0).sum() != 0:
                     # remember norm
-                    #print('projecting...')
+                    print('projecting...')
                     norm = torch.norm(self.grads[:, new_t], 2)
                     project2cone2(self.grads[:, new_t].unsqueeze(1),
                                   self.grads.index_select(1, indx), self.margin)
