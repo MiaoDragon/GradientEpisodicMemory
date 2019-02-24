@@ -162,7 +162,7 @@ class Net(nn.Module):
     def remember(self, x, t, y):
         # follow reservoir sampling
         # i-th item is remembered with probability min(B/i, 1)
-        print('remembering...')
+        #print('remembering...')
         for i in range(len(x)):
             self.num_seen[t] += 1
             prob_thre = min(self.n_memories, self.num_seen[t])
@@ -244,14 +244,16 @@ class Net(nn.Module):
                 #print('dot product computed')
                 if (dotp < 0).sum() != 0:
                     # remember norm
-                    print('projecting...')
-                    norm = torch.norm(self.grads[:, new_t], 2)
+                    #print('projecting...')
+                    #norm = torch.norm(self.grads[:, new_t], 2)
+
                     project2cone2(self.grads[:, new_t].unsqueeze(1),
                                   self.grads.index_select(1, indx), self.margin)
                     new_norm = torch.norm(self.grads[:, new_t], 2)
                     #print('norm: %f' % (norm.item()))
                     #print('new norm: %f' % (new_norm.item()))
-                    self.grads[:, new_t].copy_(self.grads[:, new_t] / new_norm * norm)
+                    #self.grads[:, new_t].copy_(self.grads[:, new_t] / new_norm * norm)
+
                     # before overwrite, to avoid gradient explosion, renormalize the gradient
                     # so that new gradient has the same l2 norm as previous
                     # it can be proved theoretically that this does not violate the non-negativity
