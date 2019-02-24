@@ -34,7 +34,7 @@ cd ..
 
 # model "single"
 #$MY_PYTHON main.py $MNIST_ROTA --model single --lr 0.003
-$MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.1
+#$MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.1
 #$MY_PYTHON main.py $CIFAR_100i --model single --lr 1.0
 
 # model "independent"
@@ -57,7 +57,7 @@ $MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.1
 # model "GEM"
 #$MY_PYTHON main.py $MNIST_ROTA --model gem --lr 0.1 --n_memories 256 --memory_strength 0.5
 $MY_PYTHON main.py $MNIST_PERM --model gem --lr 0.1 --n_memories 50 --memory_strength 0.5
-#$MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.1 --n_memories 1000 --memory_strength 0.5
+$MY_PYTHON main.py $MNIST_PERM --model single_reservoir --lr 0.1 --n_memories 1000 --memory_strength 0.5
 #$MY_PYTHON main.py $MNIST_PERM --model minst_cont_model_prio --lr 0.1 --n_memories 50 --memory_strength 0.5
 #$MY_PYTHON main.py $CIFAR_100i --model gem --lr 0.1 --n_memories 256 --memory_strength 0.5
 
